@@ -115,8 +115,14 @@ function (Cocktail, p, BaseView, FormView, SignInTemplate, Session, PasswordMixi
         if (account.get('password')) {
           return self.broker.beforeSignIn(account.get('email'))
             .then(function () {
-              return self.fxaClient.signIn(account.get('email'),
-                      account.get('password'), self.relier);
+              return self.fxaClient.signIn(
+                account.get('email'),
+                account.get('password'),
+                self.relier,
+                {
+                  sendService: true
+                }
+              );
             })
             .then(function (updatedSessionData) {
               account.set(updatedSessionData);

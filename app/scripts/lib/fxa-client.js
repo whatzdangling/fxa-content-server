@@ -104,7 +104,21 @@ function (_, FxaClient, $, xhr, p, Session, AuthErrors, Constants) {
 
       return self._getClient()
         .then(function (client) {
-          return client.signIn(email, password, { keys: relier.wantsKeys() });
+          var signInOptions = {
+            keys: relier.wantsKeys()
+          };
+
+          // `service` is sent on signIn to notify users when a new service
+          // has been attached to their account. Notifications should only
+          // be sent when the user is signing in to a site. signIn is
+          // also called after a password change or reset. The `sendService`
+          // flag is passed in when the service should be sent (when the
+          // user is signing in).
+          if (relier.has('service') && options.sendService) {
+            signInOptions.service = relier.get('service');
+          }
+
+          return client.signIn(email, password, signInOptions);
         })
         .then(function (accountData) {
           return self._getUpdatedSessionData(email, relier, accountData, options);

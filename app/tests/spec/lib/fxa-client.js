@@ -310,10 +310,11 @@ function (chai, $, sinon, FxaClient, p, testHelpers, Session, FxaClientWrapper,
           });
         });
 
-        return client.signIn(email, password, relier, { customizeSync: true })
+        return client.signIn(email, password, relier, { customizeSync: true, sendService: true })
           .then(function (sessionData) {
             assert.isTrue(realClient.signIn.calledWith(trim(email), password, {
-              keys: true
+              keys: true,
+              service: 'sync'
             }));
 
             assert.equal(sessionData.unwrapBKey, 'unwrapBKey');
@@ -331,10 +332,11 @@ function (chai, $, sinon, FxaClient, p, testHelpers, Session, FxaClientWrapper,
         relier.set('service', 'chronicle');
         assert.isFalse(relier.wantsKeys());
         // customizeSync should be ignored.
-        return client.signIn(email, password, relier, { customizeSync: true })
+        return client.signIn(email, password, relier, { customizeSync: true, sendService: true })
           .then(function (sessionData) {
             assert.isTrue(realClient.signIn.calledWith(trim(email), password, {
-              keys: false
+              keys: false,
+              service: 'chronicle'
             }));
 
             // These should not be returned by default
