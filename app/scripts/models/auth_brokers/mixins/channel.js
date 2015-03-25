@@ -17,11 +17,48 @@ define([
   'underscore',
   'lib/promise'
 ], function (_, p) {
+  function doIt(strategy, channel, message, data) {
+    var boundStrategy = strategy.bind(channel);
+    // new channels are already set up to return promises. If so,
+    // no need to denodeify.
+    if (strategy.length === 3) {
+      return p.denodeify(boundStrategy)(message, data);
+    }
+
+    return boundStrategy(message, data);
+  }
+
   var ChannelMixin = {
+    /**
+     * Send a message to the remote listener, expect no response
+     *
+     * @param {string} message
+     * @param {object} [data]
+     * @returns {Promise}
+     *        The promise will resolve if the value was successfully sent.
+     */
     send: function (message, data) {
       var channel = this.getChannel();
-      var send = p.denodeify(_.bind(channel.send, channel));
-      return send(message, data);
+      var send = channel.send;
+
+      return doIt(send, channel, message, data);
+    },
+
+    /**
+     * Request information from the remote listener
+     *
+     * @param {string} message
+     * @param {object} [data]
+     * @returns {Promise}
+     *        The promise will resolve with the value returned by the remote
+     *        listener, or reject if there was an error.
+     */
+    request: function (message, data) {
+      var channel = this.getChannel();
+      // only new channels have a request. If not, fall back to send.
+      var request = (channel.request || channel.send);
+
+      return doIt(request, channel, message, data);
     }
   };
 

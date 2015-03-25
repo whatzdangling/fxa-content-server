@@ -21,7 +21,7 @@ define([
 ],
 function (chai, sinon, WebChannelAuthenticationBroker, Relier, User, FxaClientWrapper,
       p, NullChannel, Session, AuthErrors, BaseView, WindowMock) {
-      
+
   var assert = chai.assert;
 
   describe('models/auth_brokers/web-channel', function () {
@@ -160,7 +160,7 @@ function (chai, sinon, WebChannelAuthenticationBroker, Relier, User, FxaClientWr
         broker.set('webChannelId', 'test');
 
         var channel = broker.getChannel();
-        assert.equal(channel.id, 'test');
+        assert.equal(channel._id, 'test');
       });
     });
 
