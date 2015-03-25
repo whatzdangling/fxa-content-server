@@ -213,6 +213,17 @@ function (chai, sinon, AppStart, Session, Constants, p, Url, OAuthErrors,
         });
       });
 
+      describe('fx-desktop with a WebChannel', function () {
+        it('returns an FxDesktop broker if `service=sync&context=iframe`', function () {
+          windowMock.location.search = Url.objToSearchString({
+            service: Constants.FX_DESKTOP_SYNC,
+            context: Constants.IFRAME_CONTEXT
+          });
+
+          return testExpectedBrokerCreated(FxDesktopBroker);
+        });
+      });
+
       describe('web channel', function () {
         it('returns a WebChannel broker if `webChannelId` is present', function () {
           windowMock.location.search = Url.objToSearchString({

@@ -304,13 +304,24 @@ function (
     },
 
     initializeAuthenticationBroker: function () {
+      //jshint maxcomplexity: 7
       if (! this._authenticationBroker) {
-        if (this._isFxDesktop()) {
+        if (this._isFxDesktop() && this._isIframeContext()) {
           this._authenticationBroker = new FxDesktopAuthenticationBroker({
             window: this._window,
             relier: this._relier,
-            session: Session,
-            metrics: this._metrics
+            haltAfterLogin: false,
+            channelType: 'web-channel',
+            messagePrefix: 'fxaccounts:'
+          });
+        } else if (this._isFxDesktop()) {
+          this._authenticationBroker = new FxDesktopAuthenticationBroker({
+            window: this._window,
+            relier: this._relier,
+            metrics: this._metrics,
+            haltAfterLogin: true,
+            channelType: 'fx-desktop',
+            messagePrefix: ''
           });
         } else if (this._isWebChannel()) {
           this._authenticationBroker = new WebChannelAuthenticationBroker({
@@ -381,7 +392,7 @@ function (
     },
 
     initializeNotifications: function () {
-      var notificationWebChannel = new WebChannel(Constants.PROFILE_WEBCHANNEL_ID);
+      var notificationWebChannel = new WebChannel(Constants.ACCOUNT_UPDATES_WEBCHANNEL_ID);
       notificationWebChannel.init();
 
       this._notifications = new Notifications({
