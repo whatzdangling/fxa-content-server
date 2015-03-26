@@ -23,9 +23,10 @@
 
 define([
   'underscore',
+  'lib/promise',
   'lib/channels/base',
   'lib/channels/mixins/postmessage_receiver'
-], function (_, BaseChannel, PostMessageReceiverMixin) {
+], function (_, p, BaseChannel, PostMessageReceiverMixin) {
   function IFrameChannel() {
     // constructor, nothing to do.
   }
@@ -42,6 +43,23 @@ define([
     dispatchCommand: function (command, data) {
       var msg = IFrameChannel.stringify(command, data);
       this.window.parent.postMessage(msg, this.getOrigin());
+    },
+
+    /**
+     * A `ping` is sent out to the expected relier. The relier must respond.
+     * No response will be received if the parent is either:
+     * 1. not set up to respond correctly
+     * 2. not the expected origin
+     *
+     * either case is an error. If a response is not received
+     * from the expected origin, show a blank screen.
+     */
+    checkParentOrigin: function () {
+      var self = this;
+      var send = p.denodeify(self.send.bind(self));
+      // if a response from the expected origin is received, then we
+      // are good to go.
+      return send('ping', {});
     }
   }, PostMessageReceiverMixin);
 

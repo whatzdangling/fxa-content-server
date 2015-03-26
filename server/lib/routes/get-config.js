@@ -4,12 +4,20 @@
 
 'use strict';
 
+var url = require('url');
+
+function getOrigin(serverUrl) {
+  var parsedUrl = url.parse(serverUrl);
+  return parsedUrl.protocol + '//' + parsedUrl.host;
+}
+
 var config = require('../configuration');
 var clientId = config.get('oauth_client_id');
 
 var authServerUrl = config.get('fxaccount_url');
 var oauthServerUrl = config.get('oauth_url');
 var profileServerUrl = config.get('profile_url');
+var firstRunServerOrigin = getOrigin(config.get('first_run_url'));
 
 module.exports = function () {
   var route = {};
@@ -40,7 +48,8 @@ module.exports = function () {
       oAuthClientId: clientId,
       // req.lang is set by abide in a previous middleware.
       language: req.lang,
-      metricsSampleRate: config.get('metrics.sample_rate')
+      metricsSampleRate: config.get('metrics.sample_rate'),
+      firstRunOrigin: firstRunServerOrigin
     });
   };
 

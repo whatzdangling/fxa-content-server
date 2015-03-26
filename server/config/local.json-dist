@@ -7,6 +7,7 @@
   "oauth_url": "http://127.0.0.1:9010",
   "profile_url": "http://127.0.0.1:1111",
   "profile_images_url": "http://127.0.0.1:1112",
+  "first_run_url": "http://127.0.0.1:8111",
   "client_sessions": {
     "cookie_name": "session",
     "secret": "YOU MUST CHANGE ME",

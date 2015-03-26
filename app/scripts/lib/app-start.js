@@ -34,12 +34,14 @@ define([
   'lib/constants',
   'lib/oauth-client',
   'lib/oauth-errors',
+  'lib/auth-errors',
   'lib/profile-client',
   'lib/channels/inter-tab',
   'lib/channels/iframe',
   'lib/channels/web',
   'lib/storage',
   'lib/able',
+  'lib/environment',
   'models/reliers/relier',
   'models/reliers/oauth',
   'models/reliers/fx-desktop',
@@ -70,12 +72,14 @@ function (
   Constants,
   OAuthClient,
   OAuthErrors,
+  AuthErrors,
   ProfileClient,
   InterTabChannel,
   IframeChannel,
   WebChannel,
   Storage,
   Able,
+  Environment,
   Relier,
   OAuthRelier,
   FxDesktopRelier,
@@ -241,15 +245,48 @@ function (
       this._metrics.init();
     },
 
-    initializeIframeChannel: function () {
-      if (this._isIframe()) {
-        this._iframeChannel = new IframeChannel();
-        this._iframeChannel.init({
-          window: this._window,
-          origin: this._relier.get('origin'),
-          metrics: this._metrics
-        });
+    _getExpectedIframeOrigin: function () {
+      if (! this._isInAnIframe()) {
+        return null;
       }
+      if (this._isFxDesktop()) {
+        // If in an iframe for sync, the origin is
+        // checked against a pre-defined origin sent
+        // from the server.
+        return this._config.firstRunOrigin;
+      } else if (this._isOAuth()) {
+        // If in oauth, the relier has the allowed parent origin.
+        return this._relier.get('origin');
+      }
+
+      return null;
+    },
+
+    _checkIframeOrigin: function (iframeChannel) {
+      return iframeChannel.checkIframeOrigin();
+    },
+
+    initializeIframeChannel: function () {
+      var self = this;
+      return p().then(function () {
+        if (self._isInAnIframe()) {
+          var expectedOrigin = self._getExpectedIframeOrigin();
+          if (! expectedOrigin) {
+            throw AuthErrors.toError('ILLEGAL_IFRAME_PARENT');
+          }
+
+          var iframeChannel = self._iframeChannel = new IframeChannel();
+          iframeChannel.init({
+            window: self._window,
+            origin: expectedOrigin,
+            metrics: self._metrics
+          });
+
+          // A wrapper function is used so that the wrapper can
+          // be stubbed in for unit testing.
+          return self._checkIframeOrigin(iframeChannel);
+        }
+      });
     },
 
     initializeFormPrefill: function () {
@@ -476,7 +513,7 @@ function (
     },
 
     _isInAnIframe: function () {
-      return this._window !== this._window.top;
+      return new Environment(this._window).isFramed();
     },
 
     _isIframeContext: function () {

@@ -138,6 +138,31 @@ function (chai, sinon, IFrameChannel, AuthErrors, Metrics,
       });
     });
 
+    describe('checkParentOrigin', function () {
+      it('sends a `ping` to the channel, completes if response received', function () {
+        sinon.stub(channel, 'send', function (message, data, done) {
+          done(null);
+        });
+        return channel.checkParentOrigin()
+          .then(function () {
+            assert.isTrue(channel.send.calledWith('ping'));
+          });
+      });
+
+      it('sends a `ping` to the channel, does not complete if response is not received', function () {
+        sinon.stub(channel, 'send', function (/*message, data, done*/) {
+          // do not return.
+        });
+
+        return channel.checkParentOrigin()
+          .timeout(100, 'expected timeout')
+          .then(assert.fail, function (err) {
+            assert.isTrue(channel.send.calledWith('ping'));
+            assert.equal(err.message, 'expected timeout');
+          });
+      });
+    });
+
     describe('the full cycle', function () {
       it('calls the callback with the data received from the parentWindow', function (done) {
         channel.send('ping', {}, function (err, data) {
