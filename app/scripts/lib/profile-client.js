@@ -85,6 +85,16 @@ function (xhr, _, ProfileErrors) {
     });
   };
 
+  ProfileClient.prototype.getDisplayName = function (accessToken) {
+    return this._request('/v1/display_name', 'get', accessToken);
+  };
+
+  ProfileClient.prototype.postDisplayName = function (accessToken, displayName) {
+    return this._request('/v1/display_name', 'post', accessToken, {
+      displayName: displayName
+    });
+  };
+
   ProfileClient.Errors = ProfileErrors;
 
   return ProfileClient;
