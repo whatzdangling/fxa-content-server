@@ -108,31 +108,8 @@ function (chai, sinon, AppStart, Session, Constants, p, Url, OAuthErrors,
           });
       });
 
-      it('redirects to the start page specified by the broker', function () {
-        sinon.stub(brokerMock, 'selectStartPage', function () {
-          return p('settings');
-        });
-
-        return appStart.startApp()
-            .then(function () {
-              assert.equal(routerMock.page, 'settings');
-            });
-      });
-
-      it('does not redirect if the broker does not return a start page', function () {
-        sinon.stub(brokerMock, 'selectStartPage', function () {
-          return p();
-        });
-
-        routerMock.page = 'signup';
-        return appStart.startApp()
-            .then(function () {
-              assert.equal(routerMock.page, 'signup');
-            });
-      });
-
       it('redirects to the `INTERNAL_ERROR_PAGE` if an error occurs', function () {
-        sinon.stub(brokerMock, 'selectStartPage', function () {
+        sinon.stub(appStart, '_selectStartPage', function () {
           return p.reject(new Error('boom!'));
         });
 

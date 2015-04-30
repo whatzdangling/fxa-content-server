@@ -559,8 +559,6 @@ function (
               if (! areCookiesEnabled) {
                 return 'cookies_disabled';
               }
-
-              return self._authenticationBroker.selectStartPage();
             });
       });
     }
